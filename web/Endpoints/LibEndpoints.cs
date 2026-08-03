@@ -1,0 +1,55 @@
+using web.Services;
+using web.Utilities;
+using web.DTO;
+using web.Interfaces;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+
+namespace web.Endpoints;
+
+public static class LibEndpoints {
+	private static bool Authorize(ClaimsPrincipal claims, Guid? id = null) {
+		var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		if (userId is null) return false;
+		if (id != null && userId != id.ToString()) return false;
+		return true;
+	}
+
+	public static void MapLibEndpoints(this WebApplication app) {
+		app.MapGet("/libraries/{id}", [Authorize] async (ILibRepository libRepository, ClaimsPrincipal claims, Guid id) => {
+			if (!Authorize(claims, id)) return Results.Forbid();
+			var temp = await LibService.GetLibrary(libRepository, id);
+			var res = MapServiceResults.ToIResult(temp);
+			if (temp.IsSuccess) return Results.Ok(temp.Data);
+			else return res;
+		});
+
+		app.MapGet("/libraries/{id}/books", [Authorize] async (ILibRepository libRepository, ClaimsPrincipal claims, Guid id) => {
+			if (!Authorize(claims, id)) return Results.Forbid();
+			var temp = await LibService.GetBooks(libRepository, id);
+			if (temp.IsSuccess) return Results.Ok(temp.Data);
+			else return MapServiceResults.ToIResult(temp);
+		});
+
+		app.MapPost("/libraries/{id}/add", [Authorize] async (ILibRepository libRepository, ClaimsPrincipal claims, Guid id, LibAddRequest req) => {
+			if (!Authorize(claims, id)) return Results.Forbid();
+			var temp = await LibService.AddLibrary(libRepository, id, req);
+			if (temp.IsSuccess) return Results.Ok();
+			else return MapServiceResults.ToIResult(temp);
+		});
+
+		app.MapPost("/libraries/{id}/addbook", [Authorize] async (ILibRepository libRepository, ClaimsPrincipal claims, Guid id, BookAddRequest book) => {
+			if (!Authorize(claims, id)) return Results.Forbid();
+			var temp = await LibService.AddBook(libRepository, id, book);
+			if (temp.IsSuccess) return Results.Ok();
+			else return MapServiceResults.ToIResult(temp);
+		});
+
+		app.MapDelete("/libraries/{id}/books/{bookId}", [Authorize] async (ILibRepository libRepository, ClaimsPrincipal claims, Guid id, Guid bookId) => {
+			if (!Authorize(claims, id)) return Results.Forbid();
+			var temp = await LibService.DeleteBook(libRepository, id, bookId);
+			if (temp.IsSuccess) return Results.Ok();
+			else return MapServiceResults.ToIResult(temp);
+		});
+	}
+}

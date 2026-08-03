@@ -1,0 +1,53 @@
+using web.Services;
+using web.Utilities;
+using web.DTO;
+using web.Interfaces;
+using System.Security.Claims;
+
+namespace web.Endpoints;
+
+public static class UserEndpoints {
+	public static void MapUserEndpoints(this WebApplication app) {
+		app.MapPost("/login", async (IUserRepository userRepository, UserAuthRequest req, HttpContext context, JwtService jwtService) => {
+			var temp = await UserService.Login(userRepository, req);
+			if (temp.IsSuccess == true) {
+				var token = jwtService.CreateJwtToken(temp.Data!);
+				context.Response.Cookies.Append("jwt_token", token, new CookieOptions {
+					HttpOnly = true,
+					Secure = false,
+					SameSite = SameSiteMode.Strict,
+				});
+				return Results.Ok(new { message = "Login successful" });
+			}
+			return MapServiceResults.ToIResult(temp);
+		});
+		app.MapPost("/register", async (IUserRepository userRepository, UserAuthRequest req) => {
+			var temp = await UserService.Register(userRepository, req);
+			if (temp.IsSuccess == true) {
+				return Results.Ok(new { message = "Registration successful" });
+			}
+			return MapServiceResults.ToIResult(temp);
+		});
+		app.MapPost("/logout", (HttpContext context) => {
+			context.Response.Cookies.Delete("jwt_token");
+			return Results.Ok(new { message = "Logged out successfully" });
+		});
+		app.MapGet("/users", async (IUserRepository userRepository) => {
+			var temp = await UserService.GetUsers(userRepository);
+			if (temp.IsSuccess == true) {
+				return Results.Ok(temp.Data);
+			}
+			return MapServiceResults.ToIResult(temp);
+		});
+		app.MapDelete("/users/{id}", async (IUserRepository userRepository, ClaimsPrincipal claims, Guid id) => {
+			if (claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value != id.ToString()) {
+				return Results.Forbid();
+			}
+			var temp = await UserService.Delete(userRepository, id);
+			if (temp.IsSuccess == true) {
+				return Results.Ok(new { message = "User deleted successfully" });
+			}
+			return MapServiceResults.ToIResult(temp);
+		});
+	}
+}
