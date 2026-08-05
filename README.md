@@ -17,4 +17,4 @@ Right now i am adding unit tests, already added tests for UserService, on the wa
 - [x] LibService unit testing
 
 After unit testing i am planning to add some integration tests, i don't know how to do that yet, but will learn in the nearest future.
-- [ ] Integration testing
+- [x] Integration testing
