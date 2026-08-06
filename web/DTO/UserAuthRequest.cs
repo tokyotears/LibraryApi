@@ -1,3 +1,3 @@
 namespace web.DTO;
 
-public record UserAuthRequest(string Name, string Password);
+public record UserAuthRequest(string Name, string Password, string? Role);

@@ -25,7 +25,7 @@ public static class UserService {
 		if (user != null) {
 			return new Response {Error = ErrorType.UserAlreadyExists};
 		} else {
-			User newUser = new (req.Name, Guid.NewGuid(), U.HashPassword(req.Password));
+			User newUser = new (req.Name, Guid.NewGuid(), U.HashPassword(req.Password), req.Role);
 			await userRepository.AddUser(newUser);
 			return new Response();
 		}

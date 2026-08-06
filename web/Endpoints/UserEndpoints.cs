@@ -2,6 +2,7 @@ using web.Services;
 using web.Utilities;
 using web.DTO;
 using web.Interfaces;
+using web.Models;
 using System.Security.Claims;
 
 namespace web.Endpoints;
@@ -32,19 +33,26 @@ public static class UserEndpoints {
 			context.Response.Cookies.Delete("jwt_token");
 			return Results.Ok(new { message = "Logged out successfully" });
 		});
-		app.MapGet("/users", async (IUserRepository userRepository) => {
+		app.MapGet("/users", async (IUserRepository userRepository, ClaimsPrincipal claims) => {
+			if (claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != Roles.Admin.ToString()) {
+				return Results.Forbid();
+			}
 			var temp = await UserService.GetUsers(userRepository);
 			if (temp.IsSuccess == true) {
 				return Results.Ok(temp.Data);
 			}
 			return MapServiceResults.ToIResult(temp);
 		});
-		app.MapDelete("/users/{id}", async (IUserRepository userRepository, ClaimsPrincipal claims, Guid id) => {
+		app.MapDelete("/users/{id}", async (IUserRepository userRepository, ClaimsPrincipal claims, HttpContext context, Guid id) => {
+			bool isAdmin = false;
 			if (claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value != id.ToString()) {
-				return Results.Forbid();
+				if (claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != Roles.Admin.ToString()) {
+					return Results.Forbid();
+				} else isAdmin = true;
 			}
 			var temp = await UserService.Delete(userRepository, id);
 			if (temp.IsSuccess == true) {
+				if (!isAdmin) context.Response.Cookies.Delete("jwt_token");
 				return Results.Ok(new { message = "User deleted successfully" });
 			}
 			return MapServiceResults.ToIResult(temp);

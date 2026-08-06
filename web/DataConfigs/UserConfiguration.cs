@@ -10,5 +10,6 @@ public class UserConfigurarion : IEntityTypeConfiguration<User> {
 		entity.HasIndex(u => u.Name).IsUnique();
 		entity.Property(u => u.Name).IsRequired();
 		entity.Property(u => u.HashedPassword).IsRequired();
+		entity.Property(u => u.Role).IsRequired();
 	}
 }
