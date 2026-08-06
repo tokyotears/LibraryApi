@@ -18,3 +18,5 @@ Right now i am adding unit tests, already added tests for UserService, on the wa
 
 After unit testing i am planning to add some integration tests, i don't know how to do that yet, but will learn in the nearest future.
 - [x] Integration testing
+
+Added roles to users.
