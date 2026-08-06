@@ -8,8 +8,19 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options => {
+	options.SwaggerDoc("v1", new OpenApiInfo {
+		Version = "v1",
+		Title = "Library API",
+		Description = "An ASP.NET Core Web API for managing a library system.",
+	});
+});
+
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var keyBytes = Encoding.UTF8.GetBytes(jwtSection["Key"]!);
 builder.Services.AddAuthentication(options => {
@@ -42,7 +53,12 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILibService, LibService>();
 builder.Services.AddScoped<JwtService>();
 
+
 var app = builder.Build();
+if (app.Environment.IsDevelopment()) {
+	app.UseSwagger();
+	app.UseSwaggerUI();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -50,5 +66,6 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapGet("/", Utilities.Greeting);
 app.MapUserEndpoints();
 app.MapLibEndpoints();
+
 
 app.Run();
