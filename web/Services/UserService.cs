@@ -6,7 +6,7 @@ using web.DTO;
 
 namespace web.Services;
 
-public class UserService : IUserService{
+public class UserService : IUserService {
 	public async Task<Response<User>> Login(IUserRepository userRepository, UserAuthRequest req) {
 		if (!ValidationMethods.IsValidUsername(req.Name) || !ValidationMethods.IsValidPassword(req.Password)) {
 			return new Response<User> { Error = ErrorType.InvalidInput };
