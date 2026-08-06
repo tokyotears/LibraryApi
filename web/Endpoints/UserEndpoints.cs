@@ -9,8 +9,8 @@ namespace web.Endpoints;
 
 public static class UserEndpoints {
 	public static void MapUserEndpoints(this WebApplication app) {
-		app.MapPost("/login", async (IUserRepository userRepository, UserAuthRequest req, HttpContext context, JwtService jwtService) => {
-			var temp = await UserService.Login(userRepository, req);
+		app.MapPost("/login", async (IUserRepository userRepository, IUserService userService, UserAuthRequest req, HttpContext context, JwtService jwtService) => {
+			var temp = await userService.Login(userRepository, req);
 			if (temp.IsSuccess == true) {
 				var token = jwtService.CreateJwtToken(temp.Data!);
 				context.Response.Cookies.Append("jwt_token", token, new CookieOptions {
@@ -22,8 +22,8 @@ public static class UserEndpoints {
 			}
 			return MapServiceResults.ToIResult(temp);
 		});
-		app.MapPost("/register", async (IUserRepository userRepository, UserAuthRequest req) => {
-			var temp = await UserService.Register(userRepository, req);
+		app.MapPost("/register", async (IUserRepository userRepository, IUserService userService, UserAuthRequest req) => {
+			var temp = await userService.Register(userRepository, req);
 			if (temp.IsSuccess == true) {
 				return Results.Ok(new { message = "Registration successful" });
 			}
@@ -33,24 +33,24 @@ public static class UserEndpoints {
 			context.Response.Cookies.Delete("jwt_token");
 			return Results.Ok(new { message = "Logged out successfully" });
 		});
-		app.MapGet("/users", async (IUserRepository userRepository, ClaimsPrincipal claims) => {
+		app.MapGet("/users", async (IUserRepository userRepository, IUserService userService, ClaimsPrincipal claims) => {
 			if (claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != Roles.Admin.ToString()) {
 				return Results.Forbid();
 			}
-			var temp = await UserService.GetUsers(userRepository);
+			var temp = await userService.GetUsers(userRepository);
 			if (temp.IsSuccess == true) {
 				return Results.Ok(temp.Data);
 			}
 			return MapServiceResults.ToIResult(temp);
 		});
-		app.MapDelete("/users/{id}", async (IUserRepository userRepository, ClaimsPrincipal claims, HttpContext context, Guid id) => {
+		app.MapDelete("/users/{id}", async (IUserRepository userRepository, IUserService userService, ClaimsPrincipal claims, HttpContext context, Guid id) => {
 			bool isAdmin = false;
 			if (claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value != id.ToString()) {
 				if (claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != Roles.Admin.ToString()) {
 					return Results.Forbid();
 				} else isAdmin = true;
 			}
-			var temp = await UserService.Delete(userRepository, id);
+			var temp = await userService.Delete(userRepository, id);
 			if (temp.IsSuccess == true) {
 				if (!isAdmin) context.Response.Cookies.Delete("jwt_token");
 				return Results.Ok(new { message = "User deleted successfully" });

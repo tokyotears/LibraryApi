@@ -38,6 +38,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ILibRepository, LibRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ILibService, LibService>();
 builder.Services.AddScoped<JwtService>();
 
 var app = builder.Build();
