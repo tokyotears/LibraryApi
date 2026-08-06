@@ -16,6 +16,14 @@ public static class LibEndpoints {
 	}
 
 	public static void MapLibEndpoints(this WebApplication app) {
+		app.MapGet("/libraries", [Authorize] async (ILibRepository libRepository, ILibService libService, ClaimsPrincipal claims) => {
+			if (claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value != "Admin") return Results.Forbid();
+			var temp = await libService.GetAll(libRepository);
+			var res = MapServiceResults.ToIResult(temp);
+			if (temp.IsSuccess) return Results.Ok(temp.Data);
+			else return res;
+		});
+
 		app.MapGet("/libraries/{id}", [Authorize] async (ILibRepository libRepository, ILibService libService, ClaimsPrincipal claims, Guid id) => {
 			if (!Authorize(claims, id)) return Results.Forbid();
 			var temp = await libService.GetLibrary(libRepository, id);

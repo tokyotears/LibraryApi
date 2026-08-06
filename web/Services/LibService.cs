@@ -24,6 +24,11 @@ public class LibService : ILibService {
 		return new Response<Library> { Data = library };
 	}
 
+	public async Task<Response<IEnumerable<Library>>> GetAll(ILibRepository libRepository) {
+		var libraries = await libRepository.GetLibraries();
+		return new Response<IEnumerable<Library>> { Data = libraries };
+	}
+
 	public async Task<Response<IEnumerable<Book>>> GetBooks(ILibRepository libRepository, Guid id) {
 		var library = await libRepository.GetLibrary(id);
 		if (library is null) return new Response<IEnumerable<Book>> { Error = ErrorType.LibNotFound };
