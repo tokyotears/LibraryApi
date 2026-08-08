@@ -7,8 +7,8 @@ using web.DTO;
 namespace web.Services;
 
 public class UserService : IUserService {
-	public async Task<Response<User>> Login(IUserRepository userRepository, UserAuthRequest req) {
-		if (!ValidationMethods.IsValidUsername(req.Name) || !ValidationMethods.IsValidPassword(req.Password)) {
+	public async Task<Response<User>> Login(IUserRepository userRepository, UserAuthReqValidator validator, UserAuthRequest req) {
+		if (validator.Validate(req).IsValid == false) {
 			return new Response<User> { Error = ErrorType.InvalidInput };
 		}
 		User? user = await userRepository.GetUser(req.Name);
@@ -17,9 +17,9 @@ public class UserService : IUserService {
 		return new Response<User> { Data = user };
 	}
 
-	public async Task<Response> Register(IUserRepository userRepository, UserAuthRequest req) {
-		if (!ValidationMethods.IsValidUsername(req.Name) || !ValidationMethods.IsValidPassword(req.Password)) {
-			return new Response { Error = ErrorType.InvalidInput };
+	public async Task<Response> Register(IUserRepository userRepository, UserAuthReqValidator validator, UserAuthRequest req) {
+		if (validator.Validate(req).IsValid == false) {
+			return new Response<User> { Error = ErrorType.InvalidInput };
 		}
 		var user = await userRepository.GetUser(req.Name);
 		if (user != null) {

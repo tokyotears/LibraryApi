@@ -1,7 +1,7 @@
-using web.Services;
 using web.Utilities;
 using web.DTO;
 using web.Interfaces;
+using web.Validation;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
@@ -39,16 +39,16 @@ public static class LibEndpoints {
 			else return MapServiceResults.ToIResult(temp);
 		});
 
-		app.MapPost("/libraries/{id}/add", [Authorize] async (ILibRepository libRepository, ILibService libService, ClaimsPrincipal claims, Guid id, LibAddRequest req) => {
+		app.MapPost("/libraries/{id}/add", [Authorize] async (ILibRepository libRepository, ILibService libService, LibAddReqValidator validator, ClaimsPrincipal claims, Guid id, LibAddRequest req) => {
 			if (!Authorize(claims, id)) return Results.Forbid();
-			var temp = await libService.AddLibrary(libRepository, id, req);
+			var temp = await libService.AddLibrary(libRepository, validator, id, req);
 			if (temp.IsSuccess) return Results.Ok();
 			else return MapServiceResults.ToIResult(temp);
 		});
 
-		app.MapPost("/libraries/{id}/addbook", [Authorize] async (ILibRepository libRepository, ILibService libService, ClaimsPrincipal claims, Guid id, BookAddRequest book) => {
+		app.MapPost("/libraries/{id}/addbook", [Authorize] async (ILibRepository libRepository, ILibService libService, BookAddReqValidator validator, ClaimsPrincipal claims, Guid id, BookAddRequest book) => {
 			if (!Authorize(claims, id)) return Results.Forbid();
-			var temp = await libService.AddBook(libRepository, id, book);
+			var temp = await libService.AddBook(libRepository, validator, id, book);
 			if (temp.IsSuccess) return Results.Ok();
 			else return MapServiceResults.ToIResult(temp);
 		});

@@ -3,6 +3,7 @@ using web.Data;
 using web.Endpoints;
 using web.Services;
 using web.Middleware;
+using web.Validation;
 using web.Interfaces;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -51,6 +52,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ILibRepository, LibRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILibService, LibService>();
+builder.Services.AddScoped<UserAuthReqValidator>();
+builder.Services.AddScoped<LibAddReqValidator>();
+builder.Services.AddScoped<BookAddReqValidator>();
 builder.Services.AddScoped<JwtService>();
 
 
@@ -66,6 +70,5 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapGet("/", Utilities.Greeting);
 app.MapUserEndpoints();
 app.MapLibEndpoints();
-
 
 app.Run();

@@ -4,13 +4,14 @@ using web.DTO;
 using web.Interfaces;
 using web.Models;
 using System.Security.Claims;
+using web.Validation;
 
 namespace web.Endpoints;
 
 public static class UserEndpoints {
 	public static void MapUserEndpoints(this WebApplication app) {
-		app.MapPost("/login", async (IUserRepository userRepository, IUserService userService, UserAuthRequest req, HttpContext context, JwtService jwtService) => {
-			var temp = await userService.Login(userRepository, req);
+		app.MapPost("/login", async (IUserRepository userRepository, IUserService userService, UserAuthReqValidator validator, UserAuthRequest req, HttpContext context, JwtService jwtService) => {
+			var temp = await userService.Login(userRepository, validator, req);
 			if (temp.IsSuccess == true) {
 				var token = jwtService.CreateJwtToken(temp.Data!);
 				context.Response.Cookies.Append("jwt_token", token, new CookieOptions {
@@ -22,8 +23,8 @@ public static class UserEndpoints {
 			}
 			return MapServiceResults.ToIResult(temp);
 		});
-		app.MapPost("/register", async (IUserRepository userRepository, IUserService userService, UserAuthRequest req) => {
-			var temp = await userService.Register(userRepository, req);
+		app.MapPost("/register", async (IUserRepository userRepository, IUserService userService, UserAuthReqValidator validator, UserAuthRequest req) => {
+			var temp = await userService.Register(userRepository, validator, req);
 			if (temp.IsSuccess == true) {
 				return Results.Ok(new { message = "Registration successful" });
 			}
