@@ -57,7 +57,6 @@ builder.Services.AddScoped<LibAddReqValidator>();
 builder.Services.AddScoped<BookAddReqValidator>();
 builder.Services.AddScoped<JwtService>();
 
-
 var app = builder.Build();
 if (app.Environment.IsDevelopment()) {
 	app.UseSwagger();
