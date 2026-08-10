@@ -9,9 +9,10 @@ Libraries:
 - Delete
 - AddBook
 - DeleteBook
+- Edit
 
 For now that is enough, in near future it would be good to add some endpoints for editing a library (name and description). 
-- [ ] Better endpoints
+- [x] Better endpoints
 
 Right now i am adding unit tests, already added tests for UserService, on the way to add them for LibService too. I just started using Moq now, and it is much better that trying to come up with your own mock implementations of something.
 - [x] LibService unit testing
