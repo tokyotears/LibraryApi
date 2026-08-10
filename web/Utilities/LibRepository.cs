@@ -1,6 +1,7 @@
 using web.Models;
 using web.Data;
 using web.Interfaces;
+using web.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace web.Utilities;
@@ -35,6 +36,15 @@ public class LibRepository(AppDbContext db) : ILibRepository {
 		var book = await db.Books.FindAsync(bookId);
 		if (book is null || book.LibId != id) return false;
 		db.Books.Remove(book);
+		await db.SaveChangesAsync();
+		return true;
+	}
+
+	public async Task<bool> UpdateLibrary(LibAddRequest req, Guid id) {
+		var lib = await GetLibrary(id);
+		if (lib is null) return false;
+		lib.Name = req.Name;
+		lib.Desc = req.Desc;
 		await db.SaveChangesAsync();
 		return true;
 	}

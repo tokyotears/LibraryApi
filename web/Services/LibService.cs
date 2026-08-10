@@ -49,4 +49,14 @@ public class LibService : ILibService {
 		await libRepository.DeleteBook(id, bookId);
 		return new Response();
 	}
+
+	public async Task<Response> UpdateLibrary(ILibRepository libRepository, Guid id, LibAddRequest req) {
+		if (!await libRepository.UpdateLibrary(req, id)) return new Response {Error = ErrorType.LibNotFound};
+		return new Response();
+	}
+
+	public async Task<Response> DeleteLibrary(ILibRepository libRepository, Guid id) {
+		if (!await libRepository.DeleteLibrary(id)) return new Response {Error = ErrorType.LibNotFound};
+		return new Response();
+	}
 }

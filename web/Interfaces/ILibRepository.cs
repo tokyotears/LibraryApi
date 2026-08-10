@@ -1,4 +1,5 @@
 using web.Models;
+using web.DTO;
 
 namespace web.Interfaces;
 
@@ -10,4 +11,5 @@ public interface ILibRepository {
 	Task<List<Book>> GetBooks(Guid id);
 	Task AddBook(Guid id, string author, string title);
 	Task<bool> DeleteBook(Guid id, Guid bookId);
+	Task<bool> UpdateLibrary(LibAddRequest req, Guid id);
 }

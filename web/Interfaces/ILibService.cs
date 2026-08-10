@@ -11,4 +11,6 @@ public interface ILibService {
 	Task<Response> AddLibrary(ILibRepository libRepository, LibAddReqValidator validator, Guid id, LibAddRequest lib);
 	Task<Response> AddBook(ILibRepository libRepository, BookAddReqValidator validator, Guid id, BookAddRequest book);
 	Task<Response> DeleteBook(ILibRepository libRepository, Guid id, Guid bookId);
+	Task<Response> UpdateLibrary(ILibRepository libRepository, Guid id, LibAddRequest req);
+	Task<Response> DeleteLibrary(ILibRepository libRepository, Guid id);
 }

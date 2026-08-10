@@ -59,5 +59,19 @@ public static class LibEndpoints {
 			if (temp.IsSuccess) return Results.Ok();
 			else return MapServiceResults.ToIResult(temp);
 		});
+
+		app.MapPost("/libraries/{id}/edit", [Authorize] async (ILibRepository libRepository, ILibService libService, ClaimsPrincipal claims, Guid id, LibAddRequest req) => {
+			if (!Authorize(claims, id)) return Results.Forbid();
+			var res = await libService.UpdateLibrary(libRepository, id, req);
+			if (res.IsSuccess) return Results.Ok();
+			else return MapServiceResults.ToIResult(res);
+		});
+
+		app.MapDelete("/libraries/{id}/delete", [Authorize] async (ILibRepository libRepository, ILibService libService, ClaimsPrincipal claims, Guid id) => {
+			if (!Authorize(claims, id)) return Results.Forbid();
+			var res = await libService.DeleteLibrary(libRepository, id);
+			if (res.IsSuccess) return Results.Ok();
+			else return MapServiceResults.ToIResult(res);
+		});
 	}
 }
