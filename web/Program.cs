@@ -21,6 +21,7 @@ builder.Services.AddSwaggerGen(options => {
 		Description = "An ASP.NET Core Web API for managing a library system.",
 	});
 });
+builder.Services.AddControllers();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var keyBytes = Encoding.UTF8.GetBytes(jwtSection["Key"]!);
@@ -62,12 +63,11 @@ if (app.Environment.IsDevelopment()) {
 	app.UseSwagger();
 	app.UseSwaggerUI();
 }
+
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapControllers();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.MapGet("/", Utilities.Greeting);
-app.MapUserEndpoints();
-app.MapLibEndpoints();
 
 app.Run();
