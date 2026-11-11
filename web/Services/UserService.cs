@@ -7,40 +7,36 @@ using web.Enums;
 
 namespace web.Services;
 
-public class UserService : IUserService {
-	public async Task<Response<User>> Login(IUserRepository userRepository, UserAuthReqValidator validator, UserAuthRequest req) {
-		if (validator.Validate(req).IsValid == false) {
-			return new Response<User> { Error = ErrorType.InvalidInput };
-		}
-		User? user = await userRepository.GetUser(req.Name);
-		if (user is null) return new Response<User> {Error = ErrorType.UserNotFound};
-		if (!Password.VerifyPassword(req.Password, user.HashedPassword)) return new Response<User> {Error = ErrorType.WrongPassword};
-		return new Response<User> { Data = user };
-	}
-
-	public async Task<Response> Register(IUserRepository userRepository, UserAuthReqValidator validator, UserAuthRequest req) {
-		if (validator.Validate(req).IsValid == false) {
-			return new Response<User> { Error = ErrorType.InvalidInput };
-		}
+public class UserService(IUserRepository userRepository, UserAuthReqValidator validator) : IUserService {
+	public async Task<Response<User>> Login(UserAuthRequest req) {
+		if (!(await validator.ValidateAsync(req)).IsValid) return new Response<User> { Error = ErrorType.InvalidInput };
+		
 		var user = await userRepository.GetUser(req.Name);
-		if (user != null) {
-			return new Response {Error = ErrorType.UserAlreadyExists};
-		} else {
-			User newUser = new (req.Name, Guid.NewGuid(), Password.HashPassword(req.Password), req.Role);
-			await userRepository.AddUser(newUser);
-			return new Response();
-		}
+		if (user is null) return new Response<User> {Error = ErrorType.UserNotFound};
+		
+		return Password.VerifyPassword(req.Password, user.HashedPassword) ? new Response<User> {Data = user} : new Response<User> {Error = ErrorType.WrongPassword};
 	}
 
-	public async Task<Response> Delete(IUserRepository userRepository, Guid id) {
-		if (!await userRepository.DeleteUser(id)) {
-			return new Response { Error = ErrorType.UserNotFound };
-		} else return new Response();
+	public async Task<Response> Register(UserAuthRequest req) {
+		if (!(await validator.ValidateAsync(req)).IsValid) return new Response { Error = ErrorType.InvalidInput };
+		
+		var user = await userRepository.GetUser(req.Name);
+		if (user != null) return new Response {Error = ErrorType.UserAlreadyExists};
+
+		var newUser = new User(req.Name, Guid.NewGuid(), Password.HashPassword(req.Password), req.Role);
+		await userRepository.AddUser(newUser);
+		return new Response();
 	}
 
-	public async Task<Response<IEnumerable<User>>> GetUsers(IUserRepository userRepository) {
+	public async Task<Response> Delete(Guid id) {
+		if (!await userRepository.DeleteUser(id)) return new Response { Error = ErrorType.UserNotFound };
+		return new Response();
+	}
+
+	public async Task<Response<IEnumerable<User>>> GetUsers() {
 		var users = await userRepository.GetAll();
-		if (users.Count == 0) return new Response<IEnumerable<User>> { Error = ErrorType.NoUsers };
-		return new Response<IEnumerable<User>> { Data = users };
+		return users.Count == 0
+			? new Response<IEnumerable<User>> { Error = ErrorType.NoUsers }
+			: new Response<IEnumerable<User>> { Data = users };
 	}
 }
