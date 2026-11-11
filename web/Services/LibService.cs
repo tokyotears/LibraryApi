@@ -2,6 +2,7 @@ using web.Interfaces;
 using web.Models;
 using web.Validation;
 using web.DTO;
+using web.Enums;
 
 namespace web.Services;
 

@@ -1,15 +1,6 @@
-namespace web.DTO;
+using web.Enums;
 
-public enum ErrorType {
-	InvalidInput,
-	UserNotFound,
-	WrongPassword,
-	UserAlreadyExists,
-	NoUsers,
-	Forbidden,
-	LibNotFound,
-	LibExists
-}
+namespace web.DTO;
 
 public class Response {
 	public bool IsSuccess => Error is null;

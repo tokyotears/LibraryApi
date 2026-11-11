@@ -1,3 +1,5 @@
+using web.Enums;
+
 namespace web.DTO;
 
-public record UserAuthRequest(string Name, string Password, string? Role);
+public record UserAuthRequest(string Name, string Password, Roles Role);
