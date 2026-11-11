@@ -3,7 +3,7 @@ using web.Data;
 using web.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace web.Utilities;
+namespace web.Repositories;
 
 public class UserRepository(AppDbContext db) : IUserRepository {
 	public async Task<List<User>> GetAll() => await db.Users.AsNoTracking().ToListAsync();

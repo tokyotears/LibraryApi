@@ -4,7 +4,7 @@ using web.Interfaces;
 using web.DTO;
 using Microsoft.EntityFrameworkCore;
 
-namespace web.Utilities;
+namespace web.Repositories;
 
 public class LibRepository(AppDbContext db) : ILibRepository {
 	public async Task<List<Library>> GetLibraries() => await db.Libraries.AsNoTracking().ToListAsync();

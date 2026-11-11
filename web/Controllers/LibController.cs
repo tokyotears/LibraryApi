@@ -1,7 +1,6 @@
 using web.Interfaces;
 using web.DTO;
 using web.Utilities;
-using web.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -9,12 +8,12 @@ using System.Security.Claims;
 namespace web.Controllers;
 
 [ApiController]
-public class LibController(ILibRepository libRepository, ILibService libService, LibAddReqValidator libValidator, BookAddReqValidator bookValidator) : ControllerBase
+public class LibController(ILibService libService) : ControllerBase
 {
     [HttpGet("/libraries"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetLibraries()
     {
-        var libServiceCall = await libService.GetAll(libRepository);
+        var libServiceCall = await libService.GetAll();
         return libServiceCall.IsSuccess ? Ok(libServiceCall.Data) : MapServiceResults.ToResult(libServiceCall);
     }
 
@@ -24,7 +23,7 @@ public class LibController(ILibRepository libRepository, ILibService libService,
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized();
 
-        var libServiceCall = await libService.GetLibrary(libRepository, parsedId);
+        var libServiceCall = await libService.GetLibrary(parsedId);
         return libServiceCall.IsSuccess ? Ok(libServiceCall.Data) : MapServiceResults.ToResult(libServiceCall);
     }
 
@@ -34,7 +33,7 @@ public class LibController(ILibRepository libRepository, ILibService libService,
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
         
-        var libServiceCall = await libService.GetBooks(libRepository, parsedId);
+        var libServiceCall = await libService.GetBooks(parsedId);
         return libServiceCall.IsSuccess ? Ok(libServiceCall.Data) : MapServiceResults.ToResult(libServiceCall);
     }
 
@@ -44,7 +43,7 @@ public class LibController(ILibRepository libRepository, ILibService libService,
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
         
-        var libServiceCall = await libService.AddLibrary(libRepository, libValidator, parsedId, req);
+        var libServiceCall = await libService.AddLibrary(parsedId, req);
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall);
     }
 
@@ -54,7 +53,7 @@ public class LibController(ILibRepository libRepository, ILibService libService,
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
         
-        var libServiceCall = await libService.AddBook(libRepository, bookValidator, parsedId, req);
+        var libServiceCall = await libService.AddBook(parsedId, req);
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall); 
     }
     
@@ -64,7 +63,7 @@ public class LibController(ILibRepository libRepository, ILibService libService,
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
         
-        var libServiceCall = await libService.UpdateLibrary(libRepository, parsedId, req);
+        var libServiceCall = await libService.UpdateLibrary(parsedId, req);
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall); 
     }
     
@@ -74,7 +73,7 @@ public class LibController(ILibRepository libRepository, ILibService libService,
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
         
-        var libServiceCall = await libService.DeleteBook(libRepository, parsedId, bookId);
+        var libServiceCall = await libService.DeleteBook(parsedId, bookId);
         return libServiceCall.IsSuccess ? NoContent() : MapServiceResults.ToResult(libServiceCall); 
     } 
 }
