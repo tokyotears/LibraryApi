@@ -27,7 +27,7 @@ public class LibRepository(AppDbContext db) : ILibRepository {
 	public async Task<List<Book>> GetBooks(Guid id) => await db.Books.Where(b => b.LibId == id).AsNoTracking().ToListAsync();
 
 	public async Task AddBook(Guid id, string author, string title) {
-		Book book = new(author, title, id);
+		Book book = new(Guid.NewGuid(), author, title, id);
 		db.Books.Add(book);
 		await db.SaveChangesAsync();
 	}

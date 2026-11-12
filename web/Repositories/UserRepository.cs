@@ -16,7 +16,7 @@ public class UserRepository(AppDbContext db) : IUserRepository {
 	}
 
 	public async Task<bool> DeleteUser(Guid id) {
-		User? user = await db.Users.FindAsync(id);
+		var user = await db.Users.FindAsync(id);
 		if (user == null) return false;
 		db.Users.Remove(user);
 		await db.SaveChangesAsync();

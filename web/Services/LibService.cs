@@ -29,7 +29,7 @@ public class LibService(ILibRepository libRepository, LibAddReqValidator libVali
 		if (!(await libValidator.ValidateAsync(lib)).IsValid) return new Response {Error = ErrorType.InvalidInput};
 		var library = await libRepository.GetLibrary(id);
 		if (library is not null) return new Response { Error = ErrorType.LibExists };
-		library = new Library(id, lib.Name, lib.Desc);
+		library = new Library(Guid.NewGuid(), id, lib.Name, lib.Desc, DateTime.UtcNow);
 		await libRepository.AddLibrary(library);
 		return new Response();
 	}

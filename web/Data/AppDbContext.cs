@@ -10,7 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	public DbSet<Book> Books => Set<Book>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
-		modelBuilder.ApplyConfiguration(new UserConfigurarion());
+		modelBuilder.ApplyConfiguration(new UserConfiguration());
 		modelBuilder.ApplyConfiguration(new LibConfiguration());
 		modelBuilder.ApplyConfiguration(new BookConfiguration());
 	}
