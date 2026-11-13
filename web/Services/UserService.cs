@@ -17,8 +17,12 @@ public class UserService(IUserRepository userRepository, UserAuthReqValidator va
 		return Password.VerifyPassword(req.Password, user.HashedPassword) ? new Response<User> {Data = user} : new Response<User> {Error = ErrorType.WrongPassword};
 	}
 
-	public async Task<Response> Register(UserAuthRequest req) {
-		if (!(await validator.ValidateAsync(req)).IsValid) return new Response { Error = ErrorType.InvalidInput };
+	public async Task<Response> Register(UserAuthRequest req)
+	{
+		var validationRes = await validator.ValidateAsync(req);	
+		validationRes.Errors.ForEach(Console.WriteLine);
+		
+		if (!validationRes.IsValid) return new Response { Error = ErrorType.InvalidInput };
 		
 		var user = await userRepository.GetUser(req.Name);
 		if (user != null) return new Response {Error = ErrorType.UserAlreadyExists};

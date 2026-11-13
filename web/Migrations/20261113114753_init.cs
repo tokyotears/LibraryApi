@@ -6,22 +6,44 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace web.Migrations
 {
     /// <inheritdoc />
-    public partial class AllSet : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Libraries",
+                name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Desc = table.Column<string>(type: "TEXT", nullable: true)
+                    HashedPassword = table.Column<string>(type: "TEXT", nullable: false),
+                    Role = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Libraries",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Desc = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Libraries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Libraries_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,6 +76,17 @@ namespace web.Migrations
                 name: "IX_Books_LibId",
                 table: "Books",
                 column: "LibId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Libraries_UserId",
+                table: "Libraries",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Name",
+                table: "Users",
+                column: "Name",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -64,6 +97,9 @@ namespace web.Migrations
 
             migrationBuilder.DropTable(
                 name: "Libraries");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

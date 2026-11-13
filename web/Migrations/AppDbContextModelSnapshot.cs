@@ -50,6 +50,10 @@ namespace web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CreatedAt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Desc")
                         .HasColumnType("TEXT");
 
@@ -57,7 +61,12 @@ namespace web.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Libraries");
                 });
@@ -93,6 +102,15 @@ namespace web.Migrations
                     b.HasOne("web.Models.Library", null)
                         .WithMany()
                         .HasForeignKey("LibId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("web.Models.Library", b =>
+                {
+                    b.HasOne("web.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -2,8 +2,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using web.Data;
+using web.Enums;
 using web.Interfaces;
 using web.Services;
 using web.Repositories;
@@ -64,7 +66,10 @@ public static class AppConfig
         services.AddScoped<BookAddReqValidator>();
         services.AddScoped<JwtService>();
 
-        services.AddControllers();
+        services.AddControllers().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter<Roles>());
+        });
 
         return services;
     }

@@ -10,7 +10,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User> {
 		entity.HasIndex(u => u.Name).IsUnique();
 		entity.Property(u => u.Name).IsRequired();
 		entity.Property(u => u.HashedPassword).IsRequired();
-		entity.Property(u => u.Role).IsRequired();
+		entity.Property(u => u.Role).HasConversion<string>().IsRequired();
 		entity.HasMany<Library>().WithOne().HasForeignKey(l => l.UserId);
 	}
 }

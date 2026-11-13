@@ -11,8 +11,8 @@ using web.Data;
 namespace web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260725171453_AllSet")]
-    partial class AllSet
+    [Migration("20261113114753_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,6 +53,10 @@ namespace web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CreatedAt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Desc")
                         .HasColumnType("TEXT");
 
@@ -60,7 +64,12 @@ namespace web.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Libraries");
                 });
@@ -79,6 +88,10 @@ namespace web.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
@@ -92,6 +105,15 @@ namespace web.Migrations
                     b.HasOne("web.Models.Library", null)
                         .WithMany()
                         .HasForeignKey("LibId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("web.Models.Library", b =>
+                {
+                    b.HasOne("web.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

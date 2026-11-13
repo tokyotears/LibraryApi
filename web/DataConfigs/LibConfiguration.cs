@@ -8,6 +8,7 @@ public class LibConfiguration : IEntityTypeConfiguration<Library> {
 	public void Configure (EntityTypeBuilder<Library> entity) {
 		entity.HasKey(l => l.Id);
 		entity.Property(l => l.Name).IsRequired();
+		entity.Property(l => l.CreatedAt).HasConversion<string>().IsRequired();
 		entity.HasMany<Book>().WithOne().HasForeignKey(b => b.LibId);
 	}
 }
