@@ -5,11 +5,12 @@ namespace web.Interfaces;
 
 public interface ILibRepository {
 	Task<List<Library>> GetLibraries();
-	Task<Library?> GetLibrary(Guid id);
+	Task<List<Library>> GetMyLibraries(Guid id);
+	Task<Library?> GetLibrary(Guid userId, Guid id);
 	Task AddLibrary(Library library);
 	Task<bool> DeleteLibrary(Guid id);
 	Task<List<Book>> GetBooks(Guid id);
-	Task AddBook(Guid id, string author, string title);
-	Task<bool> DeleteBook(Guid id, Guid bookId);
+	Task AddBook(Book book);
+	Task<bool> DeleteBook(Guid bookId);
 	Task<bool> UpdateLibrary(LibAddRequest req, Guid id);
 }

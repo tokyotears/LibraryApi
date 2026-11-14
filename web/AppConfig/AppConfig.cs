@@ -59,8 +59,8 @@ public static class AppConfig
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ILibRepository, LibRepository>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<ILibService, LibService>();
+        services.AddScoped<UserService>();
+        services.AddScoped<LibService>();
         services.AddScoped<UserAuthReqValidator>();
         services.AddScoped<LibAddReqValidator>();
         services.AddScoped<BookAddReqValidator>();

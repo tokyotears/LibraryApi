@@ -1,23 +1,20 @@
-What is already done - basic functionality. 
 Users:
 - Register
 - Login
 - Logout
-- Delete
+- Delete my account 
+- Get all users (Admin only)
+- Delete any user (Admin only)
+
 Libraries:
-- Add
-- Delete
-- AddBook
-- DeleteBook
-- Edit
+- Get all libraries (Admin only)
+- Get all my libraries
+- Get my library
+- Get all my books
+- Add a library
+- Add a book
+- Update a library
+- Delete a book
+- Delete a library
 
-For now that is enough, in near future it would be good to add some endpoints for editing a library (name and description). 
-- [x] Better endpoints
-
-Right now i am adding unit tests, already added tests for UserService, on the way to add them for LibService too. I just started using Moq now, and it is much better that trying to come up with your own mock implementations of something.
-- [x] LibService unit testing
-
-After unit testing i am planning to add some integration tests, i don't know how to do that yet, but will learn in the nearest future.
-- [x] Integration testing
-
-Added roles to users.
+Last change: Rewrote library repository in pure sql and made small fixes in some files for code readability

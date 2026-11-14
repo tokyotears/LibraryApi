@@ -6,10 +6,18 @@ using web.Enums;
 
 namespace web.Services;
 
-public class LibService(ILibRepository libRepository, LibAddReqValidator libValidator, BookAddReqValidator bookValidator) : ILibService {
-	public async Task<Response<Library>> GetLibrary(Guid id) {
-		var library = await libRepository.GetLibrary(id);
+public class LibService(ILibRepository libRepository, LibAddReqValidator libValidator, BookAddReqValidator bookValidator) {
+	public async Task<Response<Library>> GetLibrary(Guid userId, Guid libId) {
+		var library = await libRepository.GetLibrary(userId, libId);
 		return library is null ? new Response<Library> { Error = ErrorType.LibNotFound } : new Response<Library> { Data = library };
+	}
+
+	public async Task<Response<List<Library>>> GetMyLibraries(Guid userId)
+	{
+		var libraries = await libRepository.GetMyLibraries(userId);
+		
+		return libraries.Count == 0 ? new Response<List<Library>> {Error = ErrorType.NoLibsFound} : new
+			Response<List<Library>> { Data = libraries };
 	}
 
 	public async Task<Response<IEnumerable<Library>>> GetAll() {
@@ -17,40 +25,38 @@ public class LibService(ILibRepository libRepository, LibAddReqValidator libVali
 		return new Response<IEnumerable<Library>> { Data = libraries };
 	}
 
-	public async Task<Response<IEnumerable<Book>>> GetBooks(Guid id) {
-		var library = await libRepository.GetLibrary(id);
+	public async Task<Response<IEnumerable<Book>>> GetBooks(Guid userId, Guid libId) {
+		var library = await libRepository.GetLibrary(userId, libId);
 		if (library is null) return new Response<IEnumerable<Book>> { Error = ErrorType.LibNotFound };
 		
-		var books = await libRepository.GetBooks(id);
+		var books = await libRepository.GetBooks(libId);
 		return new Response<IEnumerable<Book>> { Data = books };
 	}
 
-	public async Task<Response> AddLibrary(Guid id, LibAddRequest lib) {
+	public async Task<Response> AddLibrary(Guid userId, LibAddRequest lib) {
 		if (!(await libValidator.ValidateAsync(lib)).IsValid) return new Response {Error = ErrorType.InvalidInput};
-		var library = await libRepository.GetLibrary(id);
-		if (library is not null) return new Response { Error = ErrorType.LibExists };
-		library = new Library(Guid.NewGuid(), id, lib.Name, lib.Desc, DateTime.UtcNow);
+		var library = new Library(Guid.NewGuid(), userId, lib.Name, lib.Desc, DateTime.UtcNow);
 		await libRepository.AddLibrary(library);
 		return new Response();
 	}
 
-	public async Task<Response> AddBook(Guid id, BookAddRequest book) {
+	public async Task<Response> AddBook(Guid userId, Guid libId, BookAddRequest book) {
 		if (!(await bookValidator.ValidateAsync(book)).IsValid) return new Response { Error = ErrorType.InvalidInput };
-		var library = await libRepository.GetLibrary(id);
+		var library = await libRepository.GetLibrary(userId, libId);
 		if (library is null) return new Response { Error = ErrorType.LibNotFound };
-		await libRepository.AddBook(library.Id, book.Title, book.Author);
+		await libRepository.AddBook(new Book(Guid.NewGuid(), book.Author, book.Title, library.Id));
 		return new Response();
 	}
 
-	public async Task<Response> DeleteBook(Guid id, Guid bookId) {
-		var library = await libRepository.GetLibrary(id);
+	public async Task<Response> DeleteBook(Guid userId, Guid libId, Guid bookId) {
+		var library = await libRepository.GetLibrary(userId, libId);
 		if (library is null) return new Response { Error = ErrorType.LibNotFound };
-		await libRepository.DeleteBook(id, bookId);
+		await libRepository.DeleteBook(bookId);
 		return new Response();
 	}
 
-	public async Task<Response> UpdateLibrary(Guid id, LibAddRequest req) {
-		if (!await libRepository.UpdateLibrary(req, id)) return new Response {Error = ErrorType.LibNotFound};
+	public async Task<Response> UpdateLibrary(Guid libId, LibAddRequest req) {
+		if (!await libRepository.UpdateLibrary(req, libId)) return new Response {Error = ErrorType.LibNotFound};
 		return new Response();
 	}
 

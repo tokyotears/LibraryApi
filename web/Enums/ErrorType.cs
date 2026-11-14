@@ -9,5 +9,6 @@ public enum ErrorType
     NoUsers,
     Forbidden,
     LibNotFound,
-    LibExists
+    LibExists,
+    NoLibsFound
 }

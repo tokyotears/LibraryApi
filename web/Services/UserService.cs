@@ -7,7 +7,7 @@ using web.Enums;
 
 namespace web.Services;
 
-public class UserService(IUserRepository userRepository, UserAuthReqValidator validator) : IUserService {
+public class UserService(IUserRepository userRepository, UserAuthReqValidator validator) {
 	public async Task<Response<User>> Login(UserAuthRequest req) {
 		if (!(await validator.ValidateAsync(req)).IsValid) return new Response<User> { Error = ErrorType.InvalidInput };
 		

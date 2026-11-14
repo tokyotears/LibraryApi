@@ -1,4 +1,3 @@
-using web.Interfaces;
 using web.DTO;
 using web.Services;
 using web.Utilities;
@@ -9,7 +8,7 @@ using System.Security.Claims;
 namespace web.Controllers;
 
 [ApiController]
-public class UserController(IUserService userService, JwtService jwtService) : ControllerBase
+public class UserController(UserService userService, JwtService jwtService) : ControllerBase
 {
     [HttpPost("/login")]
     public async Task<IActionResult> Login(UserAuthRequest req)
