@@ -1,5 +1,5 @@
+using FluentValidation;
 using web.Models;
-using web.Validation;
 using web.Interfaces;
 using web.Utilities;
 using web.DTO;
@@ -7,9 +7,14 @@ using web.Enums;
 
 namespace web.Services;
 
-public class UserService(IUserRepository userRepository, UserAuthReqValidator validator) {
-	public async Task<Response<User>> Login(UserAuthRequest req) {
-		if (!(await validator.ValidateAsync(req)).IsValid) return new Response<User> { Error = ErrorType.InvalidInput };
+public class UserService(IUserRepository userRepository, IValidator<UserAddRequest> addReqValidator, IValidator<UserAuthRequest> authReqValidator) {
+	public async Task<Response<User>> Login(UserAuthRequest req)
+	{
+		var validationRes = await authReqValidator.ValidateAsync(req);
+
+		if (!validationRes.IsValid)
+			return new Response<User>
+				{ Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
 		
 		var user = await userRepository.GetUser(req.Name);
 		if (user is null) return new Response<User> {Error = ErrorType.UserNotFound};
@@ -17,12 +22,13 @@ public class UserService(IUserRepository userRepository, UserAuthReqValidator va
 		return Password.VerifyPassword(req.Password, user.HashedPassword) ? new Response<User> {Data = user} : new Response<User> {Error = ErrorType.WrongPassword};
 	}
 
-	public async Task<Response> Register(UserAuthRequest req)
+	public async Task<Response> Register(UserAddRequest req)
 	{
-		var validationRes = await validator.ValidateAsync(req);	
-		validationRes.Errors.ForEach(Console.WriteLine);
+		var validationRes = await addReqValidator.ValidateAsync(req);	
 		
-		if (!validationRes.IsValid) return new Response { Error = ErrorType.InvalidInput };
+		if (!validationRes.IsValid)
+			return new Response<User>
+				{ Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
 		
 		var user = await userRepository.GetUser(req.Name);
 		if (user != null) return new Response {Error = ErrorType.UserAlreadyExists};

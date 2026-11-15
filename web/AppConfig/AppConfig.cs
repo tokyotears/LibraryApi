@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
 using System.Text;
 using System.Text.Json.Serialization;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using web.Data;
 using web.Enums;
+using web.DTO;
 using web.Interfaces;
 using web.Services;
 using web.Repositories;
@@ -61,9 +63,10 @@ public static class AppConfig
         services.AddScoped<ILibRepository, LibRepository>();
         services.AddScoped<UserService>();
         services.AddScoped<LibService>();
-        services.AddScoped<UserAuthReqValidator>();
-        services.AddScoped<LibAddReqValidator>();
-        services.AddScoped<BookAddReqValidator>();
+        services.AddScoped<IValidator<UserAuthRequest>, UserAuthReqValidator>();
+        services.AddScoped<IValidator<UserAddRequest>, UserAddReqValidator>();
+        services.AddScoped<IValidator<LibAddRequest>, LibAddReqValidator>();
+        services.AddScoped<IValidator<BookAddRequest>, BookAddReqValidator>();
         services.AddScoped<JwtService>();
 
         services.AddControllers().AddJsonOptions(options =>

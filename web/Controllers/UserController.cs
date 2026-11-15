@@ -1,9 +1,9 @@
-using web.DTO;
-using web.Services;
-using web.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using web.DTO;
+using web.Services;
+using web.Utilities;
 
 namespace web.Controllers;
 
@@ -27,7 +27,7 @@ public class UserController(UserService userService, JwtService jwtService) : Co
     }
 
     [HttpPost("/register")]
-    public async Task<IActionResult> Register(UserAuthRequest req)
+    public async Task<IActionResult> Register(UserAddRequest req)
     {
         var userServiceCall = await userService.Register(req);
         return userServiceCall.IsSuccess ? Ok("Registered successfully") : MapServiceResults.ToResult(userServiceCall);

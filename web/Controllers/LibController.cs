@@ -70,7 +70,7 @@ public class LibController(LibService libService) : ControllerBase
     }
     
     [HttpPost("/libraries/me/{libId:guid}/edit"), Authorize]
-    public async Task<IActionResult> UpdateLibrary([FromRoute] Guid libId, LibAddRequest req)
+    public async Task<IActionResult> UpdateLibrary([FromRoute] Guid libId, LibChangeRequest req)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out _)) return Unauthorized(); 

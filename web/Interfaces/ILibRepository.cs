@@ -12,5 +12,5 @@ public interface ILibRepository {
 	Task<List<Book>> GetBooks(Guid id);
 	Task AddBook(Book book);
 	Task<bool> DeleteBook(Guid bookId);
-	Task<bool> UpdateLibrary(LibAddRequest req, Guid id);
+	Task<bool> UpdateLibrary(LibChangeRequest req, Guid id);
 }

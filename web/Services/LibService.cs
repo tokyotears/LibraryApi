@@ -1,12 +1,12 @@
+using FluentValidation;
 using web.Interfaces;
 using web.Models;
-using web.Validation;
 using web.DTO;
 using web.Enums;
 
 namespace web.Services;
 
-public class LibService(ILibRepository libRepository, LibAddReqValidator libValidator, BookAddReqValidator bookValidator) {
+public class LibService(ILibRepository libRepository, IValidator<LibAddRequest> libAddValidator, IValidator<BookAddRequest> bookAddValidator) {
 	public async Task<Response<Library>> GetLibrary(Guid userId, Guid libId) {
 		var library = await libRepository.GetLibrary(userId, libId);
 		return library is null ? new Response<Library> { Error = ErrorType.LibNotFound } : new Response<Library> { Data = library };
@@ -33,18 +33,29 @@ public class LibService(ILibRepository libRepository, LibAddReqValidator libVali
 		return new Response<IEnumerable<Book>> { Data = books };
 	}
 
-	public async Task<Response> AddLibrary(Guid userId, LibAddRequest lib) {
-		if (!(await libValidator.ValidateAsync(lib)).IsValid) return new Response {Error = ErrorType.InvalidInput};
-		var library = new Library(Guid.NewGuid(), userId, lib.Name, lib.Desc, DateTime.UtcNow);
+	public async Task<Response> AddLibrary(Guid userId, LibAddRequest req)
+	{
+		var validationRes = await libAddValidator.ValidateAsync(req);
+
+		if (!validationRes.IsValid)
+			return new Response
+				{ Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
+		
+		var library = new Library(Guid.NewGuid(), userId, req.Name, req.Desc, DateTime.UtcNow);
 		await libRepository.AddLibrary(library);
 		return new Response();
 	}
 
-	public async Task<Response> AddBook(Guid userId, Guid libId, BookAddRequest book) {
-		if (!(await bookValidator.ValidateAsync(book)).IsValid) return new Response { Error = ErrorType.InvalidInput };
+	public async Task<Response> AddBook(Guid userId, Guid libId, BookAddRequest req) {
+		var validationRes = await bookAddValidator.ValidateAsync(req);
+
+		if (!validationRes.IsValid)
+			return new Response
+				{ Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };	
+		
 		var library = await libRepository.GetLibrary(userId, libId);
 		if (library is null) return new Response { Error = ErrorType.LibNotFound };
-		await libRepository.AddBook(new Book(Guid.NewGuid(), book.Author, book.Title, library.Id));
+		await libRepository.AddBook(new Book(Guid.NewGuid(), req.Author, req.Title, library.Id));
 		return new Response();
 	}
 
@@ -55,7 +66,7 @@ public class LibService(ILibRepository libRepository, LibAddReqValidator libVali
 		return new Response();
 	}
 
-	public async Task<Response> UpdateLibrary(Guid libId, LibAddRequest req) {
+	public async Task<Response> UpdateLibrary(Guid libId, LibChangeRequest req) {
 		if (!await libRepository.UpdateLibrary(req, libId)) return new Response {Error = ErrorType.LibNotFound};
 		return new Response();
 	}
