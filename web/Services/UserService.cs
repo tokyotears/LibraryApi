@@ -7,22 +7,21 @@ using web.Enums;
 
 namespace web.Services;
 
-public class UserService(IUserRepository userRepository, IValidator<UserAddRequest> addReqValidator, IValidator<UserAuthRequest> authReqValidator) {
-	public async Task<Response<User>> Login(UserAuthRequest req)
+public class UserService(IUserRepository userRepository, IValidator<UserCreateRequest> addReqValidator, IValidator<UserAuthRequest> authReqValidator) {
+	public async Task<Response<UserResponse>> Login(UserAuthRequest req)
 	{
 		var validationRes = await authReqValidator.ValidateAsync(req);
 
 		if (!validationRes.IsValid)
-			return new Response<User>
-				{ Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
+			return new Response<UserResponse> { Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
 		
 		var user = await userRepository.GetUser(req.Name);
-		if (user is null) return new Response<User> {Error = ErrorType.UserNotFound};
+		if (user is null) return new Response<UserResponse> {Error = ErrorType.UserNotFound};
 		
-		return Password.VerifyPassword(req.Password, user.HashedPassword) ? new Response<User> {Data = user} : new Response<User> {Error = ErrorType.WrongPassword};
+		return Password.VerifyPassword(req.Password, user.HashedPassword) ? new Response<UserResponse> {Data = new UserResponse(user.Id, user.Name, user.Role)} : new Response<UserResponse> {Error = ErrorType.WrongPassword};
 	}
 
-	public async Task<Response> Register(UserAddRequest req)
+	public async Task<Response> Register(UserCreateRequest req)
 	{
 		var validationRes = await addReqValidator.ValidateAsync(req);	
 		

@@ -10,7 +10,7 @@ public class UserAuthReqValidator : AbstractValidator<UserAuthRequest> {
     }
 }
 
-public class UserAddReqValidator : AbstractValidator<UserAddRequest> {
+public class UserAddReqValidator : AbstractValidator<UserCreateRequest> {
     public UserAddReqValidator() {
         RuleFor(req => req.Name).NotNull().MinimumLength(1);
         RuleFor(req => req.Password).NotNull().MinimumLength(6);

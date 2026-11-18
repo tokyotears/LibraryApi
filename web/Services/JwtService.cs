@@ -1,13 +1,13 @@
-using web.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using web.DTO;
 
 namespace web.Services;
 
 public class JwtService(IConfiguration config) {
-	public string CreateJwtToken(User user) {
+	public string CreateJwtToken(UserResponse user) {
 		var jwt = config.GetSection("Jwt");
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
 		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

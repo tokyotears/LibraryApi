@@ -7,7 +7,7 @@ namespace web.Utilities;
 public static class MapServiceResults {
 	public static IActionResult ToResult(Response response) {
 		return response.Error switch {
-			ErrorType.InvalidInput => new BadRequestObjectResult(new {error = "Invalid input"}),
+			ErrorType.InvalidInput => new BadRequestObjectResult(new {errors = response.Errors}),
 			ErrorType.UserNotFound => new NotFoundObjectResult(new { error = "User not found" }),
 			ErrorType.WrongPassword => new UnauthorizedResult(),
 			ErrorType.UserAlreadyExists => new ConflictObjectResult(new { error = "User already exists" }),

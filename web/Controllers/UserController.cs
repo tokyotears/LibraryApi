@@ -27,7 +27,7 @@ public class UserController(UserService userService, JwtService jwtService) : Co
     }
 
     [HttpPost("/register")]
-    public async Task<IActionResult> Register(UserAddRequest req)
+    public async Task<IActionResult> Register(UserCreateRequest req)
     {
         var userServiceCall = await userService.Register(req);
         return userServiceCall.IsSuccess ? Ok("Registered successfully") : MapServiceResults.ToResult(userServiceCall);

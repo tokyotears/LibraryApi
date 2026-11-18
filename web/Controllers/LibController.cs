@@ -10,14 +10,14 @@ namespace web.Controllers;
 [ApiController]
 public class LibController(LibService libService) : ControllerBase
 {
-    [HttpGet("/libraries"), Authorize(Roles = "Admin")]
+    [HttpGet("/libraries/all"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAllLibraries()
     {
         var libServiceCall = await libService.GetAll();
         return libServiceCall.IsSuccess ? Ok(libServiceCall.Data) : MapServiceResults.ToResult(libServiceCall);
     }
 
-    [HttpGet("/libraries/me"), Authorize]
+    [HttpGet("/libraries"), Authorize]
     public async Task<IActionResult> GetMyLibraries()
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -29,7 +29,7 @@ public class LibController(LibService libService) : ControllerBase
         return Ok(libServiceCall.Data);
     }
 
-    [HttpGet("/libraries/me/{libId:guid}"), Authorize]
+    [HttpGet("/libraries/{libId:guid}"), Authorize]
     public async Task<IActionResult> GetMyLibrary([FromRoute] Guid libId)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -39,7 +39,7 @@ public class LibController(LibService libService) : ControllerBase
         return libServiceCall.IsSuccess ? Ok(libServiceCall.Data) : MapServiceResults.ToResult(libServiceCall);
     }
 
-    [HttpGet("/libraries/me/{libId:guid}/books"), Authorize]
+    [HttpGet("/libraries/{libId:guid}/books"), Authorize]
     public async Task<IActionResult> GetMyBooks([FromRoute] Guid libId)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -49,8 +49,8 @@ public class LibController(LibService libService) : ControllerBase
         return libServiceCall.IsSuccess ? Ok(libServiceCall.Data) : MapServiceResults.ToResult(libServiceCall);
     }
 
-    [HttpPost("/libraries/me/add"), Authorize]
-    public async Task<IActionResult> AddLibrary(LibAddRequest req)
+    [HttpPost("/libraries/add"), Authorize]
+    public async Task<IActionResult> AddLibrary(LibCreateRequest req)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
@@ -59,8 +59,8 @@ public class LibController(LibService libService) : ControllerBase
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall);
     }
 
-    [HttpPost("/libraries/me/{libId:guid}/addbook"), Authorize]
-    public async Task<IActionResult> AddBook([FromRoute] Guid libId, BookAddRequest req)
+    [HttpPost("/libraries/{libId:guid}/addbook"), Authorize]
+    public async Task<IActionResult> AddBook([FromRoute] Guid libId, BookCreateRequest req)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
@@ -69,8 +69,8 @@ public class LibController(LibService libService) : ControllerBase
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall); 
     }
     
-    [HttpPost("/libraries/me/{libId:guid}/edit"), Authorize]
-    public async Task<IActionResult> UpdateLibrary([FromRoute] Guid libId, LibChangeRequest req)
+    [HttpPatch("/libraries/{libId:guid}/edit"), Authorize]
+    public async Task<IActionResult> UpdateLibrary([FromRoute] Guid libId, LibUpdateRequest req)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdValue, out _)) return Unauthorized(); 
@@ -79,7 +79,7 @@ public class LibController(LibService libService) : ControllerBase
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall); 
     }
     
-    [HttpDelete("/libraries/me/{libId:guid}/books/{bookid:guid}"), Authorize]
+    [HttpDelete("/libraries/{libId:guid}/books/{bookid:guid}"), Authorize]
     public async Task<IActionResult> DeleteBook([FromRoute] Guid libId, [FromRoute] Guid bookId)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -89,7 +89,7 @@ public class LibController(LibService libService) : ControllerBase
         return libServiceCall.IsSuccess ? NoContent() : MapServiceResults.ToResult(libServiceCall); 
     }
 
-    [HttpDelete("/libraries/me/{libId:guid}"), Authorize]
+    [HttpDelete("/libraries/{libId:guid}"), Authorize]
     public async Task<IActionResult> DeleteLibrary([FromRoute] Guid libId)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);

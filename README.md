@@ -17,4 +17,4 @@ Libraries:
 - Delete a book
 - Delete a library
 
-[Changed how validation classes are passed to services (now through interfaces). Also added new separate DTO's for some actions, so now adding a user and changing its values uses different DTOs.]
+[Added a new DTO for returning user information]

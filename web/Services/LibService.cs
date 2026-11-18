@@ -6,7 +6,7 @@ using web.Enums;
 
 namespace web.Services;
 
-public class LibService(ILibRepository libRepository, IValidator<LibAddRequest> libAddValidator, IValidator<BookAddRequest> bookAddValidator) {
+public class LibService(ILibRepository libRepository, IValidator<LibCreateRequest> libAddValidator, IValidator<BookCreateRequest> bookAddValidator) {
 	public async Task<Response<Library>> GetLibrary(Guid userId, Guid libId) {
 		var library = await libRepository.GetLibrary(userId, libId);
 		return library is null ? new Response<Library> { Error = ErrorType.LibNotFound } : new Response<Library> { Data = library };
@@ -33,7 +33,7 @@ public class LibService(ILibRepository libRepository, IValidator<LibAddRequest> 
 		return new Response<IEnumerable<Book>> { Data = books };
 	}
 
-	public async Task<Response> AddLibrary(Guid userId, LibAddRequest req)
+	public async Task<Response> AddLibrary(Guid userId, LibCreateRequest req)
 	{
 		var validationRes = await libAddValidator.ValidateAsync(req);
 
@@ -46,7 +46,7 @@ public class LibService(ILibRepository libRepository, IValidator<LibAddRequest> 
 		return new Response();
 	}
 
-	public async Task<Response> AddBook(Guid userId, Guid libId, BookAddRequest req) {
+	public async Task<Response> AddBook(Guid userId, Guid libId, BookCreateRequest req) {
 		var validationRes = await bookAddValidator.ValidateAsync(req);
 
 		if (!validationRes.IsValid)
@@ -66,7 +66,7 @@ public class LibService(ILibRepository libRepository, IValidator<LibAddRequest> 
 		return new Response();
 	}
 
-	public async Task<Response> UpdateLibrary(Guid libId, LibChangeRequest req) {
+	public async Task<Response> UpdateLibrary(Guid libId, LibUpdateRequest req) {
 		if (!await libRepository.UpdateLibrary(req, libId)) return new Response {Error = ErrorType.LibNotFound};
 		return new Response();
 	}

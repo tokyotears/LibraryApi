@@ -150,7 +150,7 @@ public class LibRepository(IConfiguration config) : ILibRepository
 		return affected > 0;
 	}
 
-	public async Task<bool> UpdateLibrary(LibChangeRequest req, Guid libId)
+	public async Task<bool> UpdateLibrary(LibUpdateRequest req, Guid libId)
 	{
 		await using var conn = new SqliteConnection(_cs);
 		await conn.OpenAsync();
