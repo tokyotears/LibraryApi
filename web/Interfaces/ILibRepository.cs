@@ -9,8 +9,5 @@ public interface ILibRepository {
 	Task<Library?> GetLibrary(Guid userId, Guid id);
 	Task AddLibrary(Library library);
 	Task<bool> DeleteLibrary(Guid id);
-	Task<List<Book>> GetBooks(Guid id);
-	Task AddBook(Book book);
-	Task<bool> DeleteBook(Guid bookId);
 	Task<bool> UpdateLibrary(LibUpdateRequest req, Guid id);
 }

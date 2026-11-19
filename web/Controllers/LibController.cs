@@ -39,17 +39,7 @@ public class LibController(LibService libService) : ControllerBase
         return libServiceCall.IsSuccess ? Ok(libServiceCall.Data) : MapServiceResults.ToResult(libServiceCall);
     }
 
-    [HttpGet("/libraries/{libId:guid}/books"), Authorize]
-    public async Task<IActionResult> GetMyBooks([FromRoute] Guid libId)
-    {
-        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
-        
-        var libServiceCall = await libService.GetBooks(parsedId, libId);
-        return libServiceCall.IsSuccess ? Ok(libServiceCall.Data) : MapServiceResults.ToResult(libServiceCall);
-    }
-
-    [HttpPost("/libraries/add"), Authorize]
+    [HttpPost("/libraries"), Authorize]
     public async Task<IActionResult> AddLibrary(LibCreateRequest req)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -59,43 +49,23 @@ public class LibController(LibService libService) : ControllerBase
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall);
     }
 
-    [HttpPost("/libraries/{libId:guid}/addbook"), Authorize]
-    public async Task<IActionResult> AddBook([FromRoute] Guid libId, BookCreateRequest req)
-    {
-        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
-        
-        var libServiceCall = await libService.AddBook(parsedId, libId, req);
-        return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall); 
-    }
-    
-    [HttpPatch("/libraries/{libId:guid}/edit"), Authorize]
+    [HttpPatch("/libraries/{libId:guid}"), Authorize]
     public async Task<IActionResult> UpdateLibrary([FromRoute] Guid libId, LibUpdateRequest req)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdValue, out _)) return Unauthorized(); 
+        if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
         
-        var libServiceCall = await libService.UpdateLibrary(libId, req);
+        var libServiceCall = await libService.UpdateLibrary(libId, parsedId, req);
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall); 
     }
     
-    [HttpDelete("/libraries/{libId:guid}/books/{bookid:guid}"), Authorize]
-    public async Task<IActionResult> DeleteBook([FromRoute] Guid libId, [FromRoute] Guid bookId)
-    {
-        var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized(); 
-        
-        var libServiceCall = await libService.DeleteBook(parsedId, libId, bookId);
-        return libServiceCall.IsSuccess ? NoContent() : MapServiceResults.ToResult(libServiceCall); 
-    }
-
     [HttpDelete("/libraries/{libId:guid}"), Authorize]
     public async Task<IActionResult> DeleteLibrary([FromRoute] Guid libId)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdValue, out _)) return Unauthorized();
+        if (!Guid.TryParse(userIdValue, out var parsedId)) return Unauthorized();
 
-        var libServiceCall = await libService.DeleteLibrary(libId);
+        var libServiceCall = await libService.DeleteLibrary(libId, parsedId);
 
         return libServiceCall.IsSuccess ? Ok() : MapServiceResults.ToResult(libServiceCall);
     }

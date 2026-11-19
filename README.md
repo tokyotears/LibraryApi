@@ -17,4 +17,4 @@ Libraries:
 - Delete a book
 - Delete a library
 
-[Added a new DTO for returning user information]
+[Moved all book related endpoints and logic to different controllers, services and repositories]

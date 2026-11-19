@@ -16,6 +16,7 @@ public static class MapServiceResults {
 			ErrorType.LibNotFound => new NotFoundObjectResult(new {error = "Library not found"}),
 			ErrorType.LibExists => new BadRequestObjectResult(new {error = "Library already exists"}),
 			ErrorType.NoLibsFound => new NotFoundObjectResult(new {error = "No libraries on account"}),
+			ErrorType.BookNotFound => new NotFoundObjectResult(new {error = "Book not found"}),
 			_ => new ObjectResult("Internal server error") {StatusCode = 500}
 		};
 	}

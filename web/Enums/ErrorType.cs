@@ -10,5 +10,6 @@ public enum ErrorType
     Forbidden,
     LibNotFound,
     LibExists,
-    NoLibsFound
+    NoLibsFound,
+    BookNotFound
 }

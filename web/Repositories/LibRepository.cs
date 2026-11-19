@@ -100,56 +100,6 @@ public class LibRepository(IConfiguration config) : ILibRepository
 		return affected > 0;
 	}
 
-	public async Task<List<Book>> GetBooks(Guid libId)
-	{
-		var books = new List<Book>();
-		await using var conn = new SqliteConnection(_cs);
-		await conn.OpenAsync();
-
-		await using var cmd = conn.CreateCommand();
-		cmd.CommandText = "SELECT * FROM Books WHERE LibId = $libId";
-		cmd.Parameters.AddWithValue("$libId", libId);
-
-		await using var reader = await cmd.ExecuteReaderAsync();
-		while (await reader.ReadAsync())
-		{
-			var book = new Book(Guid.Parse(reader.GetString(0)), reader.GetString(1), reader.GetString(2),
-				Guid.Parse(reader.GetString(3)));
-			books.Add(book);
-		}
-
-		return books;
-	}
-
-	public async Task AddBook(Book book) 
-	{
-		await using var conn = new SqliteConnection(_cs);
-		await conn.OpenAsync();
-
-		await using var cmd = conn.CreateCommand();
-		cmd.CommandText = "INSERT INTO Books(Id, Author, Title, LibId) VALUES ($id, $author, $title, $libId)";
-		cmd.Parameters.AddWithValue("$id", book.Id);
-		cmd.Parameters.AddWithValue("$author", book.Author);	
-		cmd.Parameters.AddWithValue("$title", book.Title);
-		cmd.Parameters.AddWithValue("$libId", book.LibId);
-
-		await cmd.ExecuteNonQueryAsync();
-	}
-
-	public async Task<bool> DeleteBook(Guid bookId) 
-	{
-		await using var conn = new SqliteConnection(_cs);
-		await conn.OpenAsync();
-
-		await using var cmd = conn.CreateCommand();
-		cmd.CommandText = "DELETE FROM Books WHERE Id = $id LIMIT 1";
-		cmd.Parameters.AddWithValue("$id", bookId);
-
-		var affected = await cmd.ExecuteNonQueryAsync();
-
-		return affected > 0;
-	}
-
 	public async Task<bool> UpdateLibrary(LibUpdateRequest req, Guid libId)
 	{
 		await using var conn = new SqliteConnection(_cs);
