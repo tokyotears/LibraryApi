@@ -59,7 +59,7 @@ public class LibRepository(IConfiguration config) : ILibRepository
 		await conn.OpenAsync();
 
 		await using var cmd = conn.CreateCommand();
-		cmd.CommandText = "SELECT * FROM Libraries WHERE UserId = $userId, Id = $id LIMIT 1";
+		cmd.CommandText = "SELECT * FROM Libraries WHERE UserId = $userId AND Id = $id LIMIT 1";
 		cmd.Parameters.AddWithValue("$userId", userId.ToString());
 		cmd.Parameters.AddWithValue("$id", libId.ToString());
 
@@ -106,10 +106,15 @@ public class LibRepository(IConfiguration config) : ILibRepository
 		await conn.OpenAsync();
 
 		await using var cmd = conn.CreateCommand();
-		cmd.CommandText = "UPDATE Libraries SET Name = $name, Desc = $desc WHERE Id = $id";
+
+		var updates = new List<string>();
+		if (req.Name is not null) updates.Add("Name = $name");
+		if (req.Desc is not null) updates.Add("Desc = $desc");
+		
+		cmd.CommandText = $"UPDATE Libraries SET {string.Join(' ', updates)} WHERE Id = $id";
 		cmd.Parameters.AddWithValue("$id", libId);
-		cmd.Parameters.AddWithValue("$name", req.Name);
-		cmd.Parameters.AddWithValue("$desc", req.Desc);
+		if (req.Name is not null) cmd.Parameters.AddWithValue("$name", req.Name);
+		if (req.Desc is not null) cmd.Parameters.AddWithValue("$desc", req.Desc);
 
 		var affected = await cmd.ExecuteNonQueryAsync();
 

@@ -1,4 +1,3 @@
-using FluentValidation;
 using web.DTO;
 using web.Enums;
 using web.Interfaces;
@@ -22,8 +21,6 @@ public class BookService(ILibRepository libRepository, IBookRepository bookRepos
         var library = await libRepository.GetLibrary(userId, libId);
 
         if (library is null) return new Response<Book> { Error = ErrorType.LibNotFound };
-
-        if (library.Id != userId) return new Response<Book> { Error = ErrorType.Forbidden };
 
         var book = await bookRepository.GetBook(bookId);
 
@@ -50,6 +47,11 @@ public class BookService(ILibRepository libRepository, IBookRepository bookRepos
     {
         var library = await libRepository.GetLibrary(userId, libId);
         if (library is null) return new Response { Error = ErrorType.LibNotFound };
+
+        var book = await bookRepository.GetBook(bookId);
+        if (book is null) return new Response { Error = ErrorType.BookNotFound };
+        if (book.LibId != libId) return new Response { Error = ErrorType.Forbidden };
+
         await bookRepository.DeleteBook(bookId);
         return new Response();
     }
@@ -68,6 +70,9 @@ public class BookService(ILibRepository libRepository, IBookRepository bookRepos
         var book = await bookRepository.GetBook(bookId);
         if (book is null) return new Response() { Error = ErrorType.BookNotFound };
         if (book.LibId != libId) return new Response { Error = ErrorType.Forbidden };
+
+        if (req.Author is not null) book.Author = req.Author;
+        if (req.Title is not null) book.Title = req.Title;
 
         await bookRepository.UpdateBook(book);
         

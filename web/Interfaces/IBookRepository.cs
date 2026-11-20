@@ -8,5 +8,5 @@ public interface IBookRepository
     Task<List<Book>> GetBooks(Guid bookId);
     Task AddBook(Book book);
     Task UpdateBook(Book book);
-    Task<bool> DeleteBook(Guid bookId); 
+    Task DeleteBook(Guid bookId); 
 }

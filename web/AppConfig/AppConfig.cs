@@ -61,13 +61,17 @@ public static class AppConfig
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ILibRepository, LibRepository>();
+        services.AddScoped<IBookRepository, BookRepository>();
         services.AddScoped<UserService>();
         services.AddScoped<LibService>();
+        services.AddScoped<BookService>();
         services.AddScoped<IValidator<UserAuthRequest>, UserAuthReqValidator>();
         services.AddScoped<IValidator<UserCreateRequest>, UserCreateReqValidator>();
+        services.AddScoped<IValidator<UserUpdateRequest>, UserUpdateReqValidator>();
         services.AddScoped<IValidator<LibCreateRequest>, LibCreateReqValidator>();
         services.AddScoped<IValidator<LibUpdateRequest>, LibUpdateReqValidator>();
         services.AddScoped<IValidator<BookCreateRequest>, BookCreateReqValidator>();
+        services.AddScoped<IValidator<BookUpdateRequest>, BookUpdateReqValidator>();
         services.AddScoped<IRequestValidationDispatcher, RequestValidationDispatcher>();
         services.AddScoped<JwtService>();
 

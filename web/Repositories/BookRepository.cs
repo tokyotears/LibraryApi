@@ -15,6 +15,7 @@ public class BookRepository(IConfiguration config) : IBookRepository
 
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = "SELECT * FROM Books WHERE Id = $bookId LIMIT 1";
+        cmd.Parameters.AddWithValue("$bookId", bookId);
 
         await using var reader = await cmd.ExecuteReaderAsync();
         if (! await reader.ReadAsync()) return null;
@@ -65,15 +66,20 @@ public class BookRepository(IConfiguration config) : IBookRepository
         await conn.OpenAsync();
 
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "UPDATE Books SET Author = $author, Title = $title WHERE Id = $bookId";
-        cmd.Parameters.AddWithValue("$author", book.Author);
-        cmd.Parameters.AddWithValue("$title", book.Title);
-        cmd.Parameters.AddWithValue("$id", book.Id);
+
+        var updates = new List<string>();
+        if (!string.IsNullOrEmpty(book.Author)) updates.Add("Author = $author"); 
+        if (!string.IsNullOrEmpty(book.Title)) updates.Add("Title = $title");
+        
+        cmd.CommandText = $"UPDATE Books SET {string.Join(' ', updates)} WHERE Id = $bookId";
+        if (!string.IsNullOrEmpty(book.Author)) cmd.Parameters.AddWithValue("$author", book.Author);
+        if (!string.IsNullOrEmpty(book.Title)) cmd.Parameters.AddWithValue("$title", book.Title);
+        cmd.Parameters.AddWithValue("$bookId", book.Id);
 
         await cmd.ExecuteNonQueryAsync();
     }
     
-    public async Task<bool> DeleteBook(Guid bookId) 
+    public async Task DeleteBook(Guid bookId) 
     {
         await using var conn = new SqliteConnection(_cs);
         await conn.OpenAsync();
@@ -82,8 +88,6 @@ public class BookRepository(IConfiguration config) : IBookRepository
         cmd.CommandText = "DELETE FROM Books WHERE Id = $id LIMIT 1";
         cmd.Parameters.AddWithValue("$id", bookId);
 
-        var affected = await cmd.ExecuteNonQueryAsync();
-
-        return affected > 0;
+        await cmd.ExecuteNonQueryAsync();
     }
 }

@@ -15,7 +15,7 @@ public class BookUpdateReqValidator : AbstractValidator<BookUpdateRequest> {
     {
         RuleFor(req => req).Must(req => req.Author is not null || req.Title is not null)
             .WithMessage("At least one field must be provided");
-        RuleFor(req => req.Author).NotEmpty().MinimumLength(3).MaximumLength(50);
-        RuleFor(req => req.Title).NotEmpty().MinimumLength(3).MaximumLength(50);
+        RuleFor(req => req.Author).NotEmpty().MinimumLength(3).MaximumLength(50).When(req => req.Author is not null);
+        RuleFor(req => req.Title).NotEmpty().MinimumLength(3).MaximumLength(50).When(req => req.Title is not null);
     }
 }

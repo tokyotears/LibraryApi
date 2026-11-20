@@ -20,7 +20,7 @@ public class BookController(BookService bookService) : ControllerBase
         return bookServiceCall.IsSuccess ? Ok(bookServiceCall.Data) : MapServiceResults.ToResult(bookServiceCall);
     }
 
-    [HttpPost("/libraries/{libId:guid}/books/{bookId:guid}"), Authorize]
+    [HttpGet("/libraries/{libId:guid}/books/{bookId:guid}"), Authorize]
     public async Task<IActionResult> GetMyBook([FromRoute] Guid libId, [FromRoute] Guid bookId)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -30,7 +30,7 @@ public class BookController(BookService bookService) : ControllerBase
         return bookServiceCall.IsSuccess ? Ok(bookServiceCall.Data) : MapServiceResults.ToResult(bookServiceCall);
     }
     
-    [HttpPost("/libraries/{libId:guid}"), Authorize]
+    [HttpPost("/libraries/{libId:guid}/books"), Authorize]
     public async Task<IActionResult> AddBook([FromRoute] Guid libId, BookCreateRequest req)
     {
         var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
