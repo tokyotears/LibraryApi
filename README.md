@@ -1,6 +1,6 @@
 Users:
-- Register
 - Login
+- Register
 - Logout
 - Delete my account 
 - Get all users (Admin only)
@@ -10,11 +10,15 @@ Libraries:
 - Get all libraries (Admin only)
 - Get all my libraries
 - Get my library
-- Get all my books
 - Add a library
-- Add a book
 - Update a library
-- Delete a book
 - Delete a library
 
-[Moved all book related endpoints and logic to different controllers, services and repositories]
+Books:
+- Get my books
+- Get my book
+- Add a book
+- Delete a book
+- Update a book
+
+[Created a dispatcher for validators and added some endpoints]

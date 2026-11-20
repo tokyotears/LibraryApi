@@ -3,16 +3,19 @@ using web.DTO;
 
 namespace web.Validation;
 
-public class LibAddReqValidator : AbstractValidator<LibCreateRequest> {
-    public LibAddReqValidator() {
-        RuleFor(req => req.Name).NotNull().MinimumLength(3);
+public class LibCreateReqValidator : AbstractValidator<LibCreateRequest> {
+    public LibCreateReqValidator() {
+        RuleFor(req => req.Name).NotNull().MinimumLength(3).MaximumLength(50);
         RuleFor(req => req.Desc).MaximumLength(100);
     }
 }
 
-public class BookAddReqValidator : AbstractValidator<BookCreateRequest> {
-    public BookAddReqValidator() {
-        RuleFor(req => req.Author).NotNull().MinimumLength(3);
-        RuleFor(req => req.Title).NotNull().MinimumLength(3);
+public class LibUpdateReqValidator : AbstractValidator<LibUpdateRequest> {
+    public LibUpdateReqValidator()
+    {
+        RuleFor(req => req).Must(req => req.Name is not null || req.Desc is not null)
+            .WithMessage("At least on field must be provided");
+        RuleFor(req => req.Name).NotEmpty().MinimumLength(3).MaximumLength(50);
+        RuleFor(req => req.Desc).NotEmpty().MaximumLength(200);
     }
 }

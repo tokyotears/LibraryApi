@@ -64,9 +64,11 @@ public static class AppConfig
         services.AddScoped<UserService>();
         services.AddScoped<LibService>();
         services.AddScoped<IValidator<UserAuthRequest>, UserAuthReqValidator>();
-        services.AddScoped<IValidator<UserCreateRequest>, UserAddReqValidator>();
-        services.AddScoped<IValidator<LibCreateRequest>, LibAddReqValidator>();
-        services.AddScoped<IValidator<BookCreateRequest>, BookAddReqValidator>();
+        services.AddScoped<IValidator<UserCreateRequest>, UserCreateReqValidator>();
+        services.AddScoped<IValidator<LibCreateRequest>, LibCreateReqValidator>();
+        services.AddScoped<IValidator<LibUpdateRequest>, LibUpdateReqValidator>();
+        services.AddScoped<IValidator<BookCreateRequest>, BookCreateReqValidator>();
+        services.AddScoped<IRequestValidationDispatcher, RequestValidationDispatcher>();
         services.AddScoped<JwtService>();
 
         services.AddControllers().AddJsonOptions(options =>

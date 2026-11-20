@@ -7,10 +7,10 @@ using web.Enums;
 
 namespace web.Services;
 
-public class UserService(IUserRepository userRepository, IValidator<UserCreateRequest> addReqValidator, IValidator<UserAuthRequest> authReqValidator) {
+public class UserService(IUserRepository userRepository, IRequestValidationDispatcher validationDispatcher) {
 	public async Task<Response<UserResponse>> Login(UserAuthRequest req)
 	{
-		var validationRes = await authReqValidator.ValidateAsync(req);
+		var validationRes = await validationDispatcher.ValidateAsync(req);
 
 		if (!validationRes.IsValid)
 			return new Response<UserResponse> { Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
@@ -23,7 +23,7 @@ public class UserService(IUserRepository userRepository, IValidator<UserCreateRe
 
 	public async Task<Response> Register(UserCreateRequest req)
 	{
-		var validationRes = await addReqValidator.ValidateAsync(req);	
+		var validationRes = await validationDispatcher.ValidateAsync(req);	
 		
 		if (!validationRes.IsValid)
 			return new Response<User>

@@ -6,7 +6,7 @@ using web.Enums;
 
 namespace web.Services;
 
-public class LibService(ILibRepository libRepository, IValidator<LibCreateRequest> libAddValidator) {
+public class LibService(ILibRepository libRepository, IRequestValidationDispatcher validationDispatcher) {
 	public async Task<Response<Library>> GetLibrary(Guid userId, Guid libId) {
 		var library = await libRepository.GetLibrary(userId, libId);
 		return library is null ? new Response<Library> { Error = ErrorType.LibNotFound } : new Response<Library> { Data = library };
@@ -27,7 +27,7 @@ public class LibService(ILibRepository libRepository, IValidator<LibCreateReques
 
 	public async Task<Response> AddLibrary(Guid userId, LibCreateRequest req)
 	{
-		var validationRes = await libAddValidator.ValidateAsync(req);
+		var validationRes = await validationDispatcher.ValidateAsync(req);
 
 		if (!validationRes.IsValid)
 			return new Response
@@ -40,6 +40,12 @@ public class LibService(ILibRepository libRepository, IValidator<LibCreateReques
 
 	public async Task<Response> UpdateLibrary(Guid libId, Guid userId, LibUpdateRequest req)
 	{
+		var validationRes = await validationDispatcher.ValidateAsync(req);
+
+		if (!validationRes.IsValid)
+			return new Response
+				{ Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
+		
 		if (await libRepository.GetLibrary(userId, libId) is null) return new Response { Error = ErrorType.Forbidden };
 		
 		if (!await libRepository.UpdateLibrary(req, libId)) return new Response {Error = ErrorType.LibNotFound};

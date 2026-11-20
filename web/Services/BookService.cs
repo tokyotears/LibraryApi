@@ -6,7 +6,7 @@ using web.Models;
 
 namespace web.Services;
 
-public class BookService(ILibRepository libRepository, IBookRepository bookRepository, IValidator<BookCreateRequest> bookAddValidator)
+public class BookService(ILibRepository libRepository, IBookRepository bookRepository, IRequestValidationDispatcher validationDispatcher)
 {
     public async Task<Response<IEnumerable<Book>>> GetBooks(Guid userId, Guid libId) 
     {
@@ -16,10 +16,25 @@ public class BookService(ILibRepository libRepository, IBookRepository bookRepos
         var books = await bookRepository.GetBooks(libId);
         return new Response<IEnumerable<Book>> { Data = books };
     }
+
+    public async Task<Response<Book>> GetBook(Guid userId, Guid libId, Guid bookId)
+    {
+        var library = await libRepository.GetLibrary(userId, libId);
+
+        if (library is null) return new Response<Book> { Error = ErrorType.LibNotFound };
+
+        if (library.Id != userId) return new Response<Book> { Error = ErrorType.Forbidden };
+
+        var book = await bookRepository.GetBook(bookId);
+
+        if (book is null) return new Response<Book> { Error = ErrorType.BookNotFound };
+
+        return book.LibId != libId ? new Response<Book> { Error = ErrorType.Forbidden } : new Response<Book> {Data = book};
+    }
     
     public async Task<Response> AddBook(Guid userId, Guid libId, BookCreateRequest req)
     {
-        var validationRes = await bookAddValidator.ValidateAsync(req);
+        var validationRes = await validationDispatcher.ValidateAsync(req);
 
         if (!validationRes.IsValid)
             return new Response
@@ -41,6 +56,12 @@ public class BookService(ILibRepository libRepository, IBookRepository bookRepos
 
     public async Task<Response> UpdateBook(Guid userId, Guid libId, Guid bookId, BookUpdateRequest req)
     {
+        var validationRes = await validationDispatcher.ValidateAsync(req);
+
+        if (!validationRes.IsValid)
+            return new Response
+                { Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };	
+        
         var library = await libRepository.GetLibrary(userId, libId);
         if (library is null) return new Response { Error = ErrorType.Forbidden };
 
