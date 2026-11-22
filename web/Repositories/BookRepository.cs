@@ -1,6 +1,8 @@
 using Microsoft.Data.Sqlite;
+using web.DTO;
 using web.Interfaces;
 using web.Models;
+using web.Enums;
 
 namespace web.Repositories;
 
@@ -8,13 +10,15 @@ public class BookRepository(IConfiguration config) : IBookRepository
 {
     private readonly string _cs = config.GetConnectionString("DefaultConnection")!;
 
-    public async Task<Book?> GetBook(Guid bookId)
+    public async Task<Book?> GetBook(Guid userId, Guid libId, Guid bookId)
     {
         await using var conn = new SqliteConnection(_cs);
         await conn.OpenAsync();
 
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM Books WHERE Id = $bookId LIMIT 1";
+        cmd.CommandText = "SELECT 1 FROM Books WHERE Id = $bookId AND LibId = $libId AND EXISTS (SELECT 1 FROM Libraries WHERE Libraries.Id = $libId AND Libraries.UserId = $userId)";
+        cmd.Parameters.AddWithValue("$userId", userId);
+        cmd.Parameters.AddWithValue("$libId", libId); 
         cmd.Parameters.AddWithValue("$bookId", bookId);
 
         await using var reader = await cmd.ExecuteReaderAsync();
@@ -24,14 +28,15 @@ public class BookRepository(IConfiguration config) : IBookRepository
             Guid.Parse(reader.GetString(3)));
     }
 
-    public async Task<List<Book>> GetBooks(Guid libId)
+    public async Task<List<Book>> GetBooks(Guid userId, Guid libId)
     {
         var books = new List<Book>();
         await using var conn = new SqliteConnection(_cs);
         await conn.OpenAsync();
 
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT * FROM Books WHERE LibId = $libId";
+        cmd.CommandText = "SELECT * FROM Books WHERE LibId = $libId AND EXISTS (SELECT 1 FROM Libraries WHERE Libraries.Id = $libId and Libraries.UserId = $userId)";
+        cmd.Parameters.AddWithValue("$userId", userId);
         cmd.Parameters.AddWithValue("$libId", libId);
 
         await using var reader = await cmd.ExecuteReaderAsync();
@@ -45,22 +50,26 @@ public class BookRepository(IConfiguration config) : IBookRepository
         return books;
     }
     
-    public async Task AddBook(Book book) 
+    public async Task<RepoStatus> AddBook(Guid userId, Guid libId, BookCreateRequest req) 
     {
         await using var conn = new SqliteConnection(_cs);
         await conn.OpenAsync();
 
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "INSERT INTO Books(Id, Author, Title, LibId) VALUES ($id, $author, $title, $libId)";
-        cmd.Parameters.AddWithValue("$id", book.Id);
-        cmd.Parameters.AddWithValue("$author", book.Author);	
-        cmd.Parameters.AddWithValue("$title", book.Title);
-        cmd.Parameters.AddWithValue("$libId", book.LibId);
 
-        await cmd.ExecuteNonQueryAsync();
+        cmd.CommandText = "INSERT INTO Books(Id, Author, Title, LibId) SELECT $id, $author, $title, $libId WHERE EXISTS (SELECT 1 FROM Libraries WHERE Id = $libId AND UserId = $userId)";
+        cmd.Parameters.AddWithValue("$id", Guid.NewGuid());
+        cmd.Parameters.AddWithValue("$author", req.Author);
+        cmd.Parameters.AddWithValue("$title", req.Title);
+        cmd.Parameters.AddWithValue("$userId", userId);
+        cmd.Parameters.AddWithValue("$libId", libId);
+
+        var affected = await cmd.ExecuteNonQueryAsync();
+
+        return affected > 0 ? RepoStatus.Success : RepoStatus.NotFound;
     }
 
-    public async Task UpdateBook(Book book)
+    public async Task<RepoStatus> UpdateBook(Guid userId, Guid libId, Guid bookId, BookUpdateRequest req)
     {
         await using var conn = new SqliteConnection(_cs);
         await conn.OpenAsync();
@@ -68,26 +77,39 @@ public class BookRepository(IConfiguration config) : IBookRepository
         await using var cmd = conn.CreateCommand();
 
         var updates = new List<string>();
-        if (!string.IsNullOrEmpty(book.Author)) updates.Add("Author = $author"); 
-        if (!string.IsNullOrEmpty(book.Title)) updates.Add("Title = $title");
-        
-        cmd.CommandText = $"UPDATE Books SET {string.Join(' ', updates)} WHERE Id = $bookId";
-        if (!string.IsNullOrEmpty(book.Author)) cmd.Parameters.AddWithValue("$author", book.Author);
-        if (!string.IsNullOrEmpty(book.Title)) cmd.Parameters.AddWithValue("$title", book.Title);
-        cmd.Parameters.AddWithValue("$bookId", book.Id);
+        if (req.Author is not null) updates.Add("Author = $author"); 
+        if (req.Title is not null) updates.Add("Title = $title");
 
-        await cmd.ExecuteNonQueryAsync();
+        cmd.CommandText = $"UPDATE Books SET {string.Join(", ", updates)} WHERE Id = $bookId AND LibID = $libId AND EXISTS (SELECT 1 FROM Libraries WHERE Libraries.Id = $libId AND Libraries.UserId = $userId)";
+
+        if (req.Author is not null) cmd.Parameters.AddWithValue("$author", req.Author);
+        if (req.Title is not null) cmd.Parameters.AddWithValue("$title", req.Title);
+
+        cmd.Parameters.AddWithValue("$userId", userId);
+        cmd.Parameters.AddWithValue("$libId", libId);
+        cmd.Parameters.AddWithValue("$bookId", bookId);
+
+        var affected = await cmd.ExecuteNonQueryAsync();
+
+        return affected == 0 ? RepoStatus.NotFound : RepoStatus.Success;
     }
     
-    public async Task DeleteBook(Guid bookId) 
+    public async Task<RepoStatus> DeleteBook(Guid userId, Guid libId, Guid bookId) 
     {
         await using var conn = new SqliteConnection(_cs);
         await conn.OpenAsync();
 
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "DELETE FROM Books WHERE Id = $id LIMIT 1";
-        cmd.Parameters.AddWithValue("$id", bookId);
 
-        await cmd.ExecuteNonQueryAsync();
+        cmd.CommandText =
+            "DELETE * FROM Books WHERE Id = $bookId AND LibId = $libId AND EXISTS (SELECT 1 FROM Libraries WHERE Libraries.Id = $libId AND Libraries.UserId = $userId) LIMIT 1";
+
+        cmd.Parameters.AddWithValue("$userId", userId);
+        cmd.Parameters.AddWithValue("$libId", libId);
+        cmd.Parameters.AddWithValue("$bookId", bookId);
+
+        var affected = await cmd.ExecuteNonQueryAsync();
+
+        return affected == 0 ? RepoStatus.NotFound : RepoStatus.Success;
     }
 }

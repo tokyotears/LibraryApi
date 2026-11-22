@@ -5,28 +5,22 @@ using web.Models;
 
 namespace web.Services;
 
-public class BookService(ILibRepository libRepository, IBookRepository bookRepository, IRequestValidationDispatcher validationDispatcher)
+public class BookService(IBookRepository bookRepository, IRequestValidationDispatcher validationDispatcher)
 {
-    public async Task<Response<IEnumerable<Book>>> GetBooks(Guid userId, Guid libId) 
+    public async Task<Response<IEnumerable<Book>>> GetBooks(Guid userId, Guid libId)
     {
-        var library = await libRepository.GetLibrary(userId, libId);
-        if (library is null) return new Response<IEnumerable<Book>> { Error = ErrorType.LibNotFound };
-		
-        var books = await bookRepository.GetBooks(libId);
-        return new Response<IEnumerable<Book>> { Data = books };
+        var res = await bookRepository.GetBooks(userId, libId);
+
+        return res.Count == 0
+            ? new Response<IEnumerable<Book>> { Error = ErrorType.BookNotFound }
+            : new Response<IEnumerable<Book>> { Data = res };
     }
 
     public async Task<Response<Book>> GetBook(Guid userId, Guid libId, Guid bookId)
     {
-        var library = await libRepository.GetLibrary(userId, libId);
+        var res = await bookRepository.GetBook(userId, libId, bookId);
 
-        if (library is null) return new Response<Book> { Error = ErrorType.LibNotFound };
-
-        var book = await bookRepository.GetBook(bookId);
-
-        if (book is null) return new Response<Book> { Error = ErrorType.BookNotFound };
-
-        return book.LibId != libId ? new Response<Book> { Error = ErrorType.Forbidden } : new Response<Book> {Data = book};
+        return res is null ? new Response<Book> { Error = ErrorType.BookNotFound } : new Response<Book> { Data = res };
     }
     
     public async Task<Response> AddBook(Guid userId, Guid libId, BookCreateRequest req)
@@ -35,25 +29,18 @@ public class BookService(ILibRepository libRepository, IBookRepository bookRepos
 
         if (!validationRes.IsValid)
             return new Response
-                { Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };	
-		
-        var library = await libRepository.GetLibrary(userId, libId);
-        if (library is null) return new Response { Error = ErrorType.LibNotFound };
-        await bookRepository.AddBook(new Book(Guid.NewGuid(), req.Author, req.Title, library.Id));
-        return new Response();
+                { Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
+
+        var res = await bookRepository.AddBook(userId, libId, req);
+        
+        return res == RepoStatus.Success ? new Response() : new Response { Error = ErrorType.LibNotFound }; 
     }
     
-    public async Task<Response> DeleteBook(Guid userId, Guid libId, Guid bookId) 
+    public async Task<Response> DeleteBook(Guid userId, Guid libId, Guid bookId)
     {
-        var library = await libRepository.GetLibrary(userId, libId);
-        if (library is null) return new Response { Error = ErrorType.LibNotFound };
-
-        var book = await bookRepository.GetBook(bookId);
-        if (book is null) return new Response { Error = ErrorType.BookNotFound };
-        if (book.LibId != libId) return new Response { Error = ErrorType.Forbidden };
-
-        await bookRepository.DeleteBook(bookId);
-        return new Response();
+        var res = await bookRepository.DeleteBook(userId, libId, bookId);
+        
+        return res == RepoStatus.Success ? new Response() : new Response { Error = ErrorType.BookNotFound }; 
     }
 
     public async Task<Response> UpdateBook(Guid userId, Guid libId, Guid bookId, BookUpdateRequest req)
@@ -62,20 +49,10 @@ public class BookService(ILibRepository libRepository, IBookRepository bookRepos
 
         if (!validationRes.IsValid)
             return new Response
-                { Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };	
-        
-        var library = await libRepository.GetLibrary(userId, libId);
-        if (library is null) return new Response { Error = ErrorType.Forbidden };
+                { Error = ErrorType.InvalidInput, Errors = [.. validationRes.Errors.Select(e => e.ErrorMessage)] };
 
-        var book = await bookRepository.GetBook(bookId);
-        if (book is null) return new Response() { Error = ErrorType.BookNotFound };
-        if (book.LibId != libId) return new Response { Error = ErrorType.Forbidden };
+        var res = await bookRepository.UpdateBook(userId, libId, bookId, req);
 
-        if (req.Author is not null) book.Author = req.Author;
-        if (req.Title is not null) book.Title = req.Title;
-
-        await bookRepository.UpdateBook(book);
-        
-        return new Response();
+        return res == RepoStatus.Success ? new Response() : new Response { Error = ErrorType.BookNotFound };
     }
 }
